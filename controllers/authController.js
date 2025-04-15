@@ -35,7 +35,7 @@ exports.login = async (req, res) => {
         const user = await User.findOne({ where: { username } });
 
         if (!user || !bcrypt.compareSync(password, user.password)) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+            return res.status(402).json({ message: 'Invalid credentials' });
         }
 
         // Generate tokens
@@ -69,7 +69,7 @@ exports.refreshToken = async (req, res) => {
         jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET, (err, decoded) => {
             if (err) return res.status(403).json({ message: 'Token expired or invalid' });
 
-            const newAccessToken = jwt.sign({ id: decoded.id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '15m' });
+            const newAccessToken = jwt.sign({ id: decoded.id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
             res.json({ accessToken: newAccessToken });
         });
     } catch (error) {
@@ -92,6 +92,33 @@ exports.logout = async (req, res) => {
         await user.save();
 
         res.json({ message: 'Logged out successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+
+exports.self = async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+        if (!refreshToken) return res.status(403).json({ message: 'Refresh token required' });
+
+        // Remove refresh token from DB
+        const user = await User.findOne({ where: { refreshToken } });
+        if (!user) return res.status(403).json({ message: 'Invalid refresh token' });
+
+        res.json({
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            image: user.image,
+            address: user.address,
+            phone: user.phone,
+            email: user.email,
+            level: user.level,
+            levelDesc: user.levelDesc,
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });

@@ -16,12 +16,22 @@ app.use(morgan("combined", { stream: { write: (message) => logger.info(message.t
 
 // ✅ Routes
 const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
+const stockRoutes = require("./routes/stockRoutes");
+
+const base = "/service";
+
+app.get(`${base}/`, (req, res) => {
+  res.status(200).json({ message: "Gracia Service API is running!" });
+});
 
 // ✅ Serve Static Files (Fix the Image Error)
-app.use('/api/uploads', express.static('uploads'));
+app.use(`${base}/api/uploads`, express.static('uploads'));
 
 // ✅ Register Routes
-app.use("/api/auth", authRoutes);
+app.use(`${base}/api/auth`, authRoutes);
+app.use(`${base}/api/user`, userRoutes);
+app.use(`${base}/api/stocks`, stockRoutes);
 
 // ✅ Sync Database & Start Server
 const PORT = process.env.PORT || 5000;
@@ -33,5 +43,7 @@ sequelize.sync({ alter: true })
     })
     .catch((err) => {
         console.log(err);
-        logger.error("❌ Database sync error:", err.stack);
+        logger.error("❌ Database sync error:");
+        logger.error(err.message);
+        logger.error(err.stack);
     });

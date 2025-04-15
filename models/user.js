@@ -11,12 +11,9 @@ module.exports = (sequelize, DataTypes) => {
         phone: { type: DataTypes.STRING, allowNull: true, unique: true },
         email: { type: DataTypes.STRING, allowNull: true, unique: true },
         level: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
-        updateBy: { type: DataTypes.STRING, allowNull: false }
+        levelDesc: { type: DataTypes.STRING, allowNull: true },
+        status: { type: DataTypes.ENUM("new", "active", "inactive"), allowNull: false, defaultValue: "new" },
+        updateBy: { type: DataTypes.STRING, allowNull: true }
     }, { timestamps: true });
-
-    User.associate = (models) => {
-        // Define associations here if needed
-    };
-
     return User;
 };
